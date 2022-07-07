@@ -5,187 +5,154 @@
 @model IEnumerable<dotnetLexChatBot.Models.ChatBotMessage>
 @{
     Layout = null;
-    ViewData["Title"] = ".NET Lex ChatBot";
+    ViewData["Title"] = "Homegate | Swiss real estate marketplace";
 }
 
 <html>
-    <head>
-        <meta name="viewport" content="width=device-width" />
-        <title>RE Chatbox - SMG Hackaton</title>
-        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.41.0.min.js"></script>
-        <script src="~/js/chatbot/jquery-1.10.2.js" type="text/javascript"></script>
-        <script src="~/js/chatbot/jquery-ui-1.10.4.custom.min.js" type="text/javascript"></script>
-        <script ssrc="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        <script src="~/js/chatbot/awesome-landing-page.js" type="text/javascript"></script>
-        <style language="text/css">
-            input#wisdom {
-                padding: 4px;
-                font-size: 1em;
-                width: 400px
-            }
-
-            input::placeholder {
-                color: #ccc;
-                font-style: italic;
-            }
-
-            ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
-                color: #ccc;
-                font-style: italic;
-            }
-
-            :-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-                color: #ccc;
-                font-style: italic;
-            }
-
-            ::-moz-placeholder { /* Mozilla Firefox 19+ */
-                color: #909;
-                opacity: 1;
-            }
-
-            :-ms-input-placeholder { /* Internet Explorer 10-11 */
-                color: #ccc;
-                font-style: italic;
-            }
-
-            ::-ms-input-placeholder { /* Microsoft Edge */
-                color: #ccc;
-                font-style: italic;
-            }
-
-            dt.userRequest {
-                margin: 4px;
-                padding: 4px 10px 4px 10px;
-                border-radius: 4px;
-                min-width: 50%;
-                max-width: 85%;
-                float: left;
-                background-color: #7d7;
-            }
-
-            dd.lexResponse {
-                margin: 4px;
-                padding: 4px 10px 4px 10px;
-                border-radius: 4px;
-                text-align: right;
-                min-width: 50%;
-                max-width: 85%;
-                float: right;
-                background-color: #bbf;
-                font-style: italic;
-            }
-
-            td.button-cell {
-                margin: 4px;
-                padding: 4px 10px 4px 10px;
-            }
-
-            p.lexError {
-                margin: 4px;
-                padding: 4px 10px 4px 10px;
-                border-radius: 4px;
-                text-align: right;
-                min-width: 50%;
-                max-width: 85%;
-                float: right;
-                background-color: #f77;
-            }
-        </style>
-        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
-        <link href="~/css/chatbot/landing-page.css" rel="stylesheet" />
-        <!--     Fonts and icons     -->
-        <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" />
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Homegate | Swiss real estate marketplace</title>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.41.0.min.js"></script>
+    <script src="~/js/chatbot/jquery-1.10.2.js" type="text/javascript"></script>
+    <script src="~/js/chatbot/jquery-ui-1.10.4.custom.min.js" type="text/javascript"></script>
+    <script ssrc="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    @*<script src="~/js/chatbot/awesome-landing-page.js" type="text/javascript"></script>*@
+    <script src="~/js/chatbot/main.js"></script>
+    <style language="text/css">
+        
+    </style>
+    <link rel="icon" href="../wwwroot/images/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="../wwwroot/images/favicon.ico" />
+    @*<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />*@
+    <link href="~/css/chatbot/main.css" rel="stylesheet" />
+    <!--     Fonts and icons     -->
+    @*<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" />
         <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400,300' rel='stylesheet' type='text/css' />
-        <link href="~/css/chatbot/pe-icon-7-stroke.css" rel="stylesheet" />
-    </head>
-    <body class="landing-page landing-page1">
-        <div class="wrapper">
-            <div class="parallax filter-gradient blue" data-color="blue">
-                <div class="parallax-background">
-                    <img class="parallax-background-image" src="~/images/bg3.jpg">
-                </div>
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-5">
-                            <div class="parallax-image">
-                                <div id="chatheader" style="width: 400px;height: 60px;border: 1px solid gray;background-color: cadetblue;border-radius: 10px">
-                                    <img src="~/images/awspowered-sm.png" style="float:left; margin-top:2px;max-height:95%; max-width:20%;border: 1px solid #7b7b7b;border-radius: 50%;"/>
-                                    <h4 style="margin-top:15px;float:left;padding-left:5px;color:white">Book your real estate with Homegate</h4>
-                                </div>
-                                <div id="conversation" style="width: 400px; height: 450px; border: 2px solid gray;background-color: #ffffff; overflow: scroll;object-position:bottom">
-                                    <dl>
-                                        @foreach (var ChatMsg in Model)
-                                        {
-                                            if (ChatMsg.MsgType == dotnetLexChatBot.Models.MessageType.UserMessage)
-                                            {
-                                            <dt class="userRequest">@ChatMsg.ChatMessage</dt>
-                                            }
-                                            else
-                                            {
-                                            <dd class="lexResponse">@ChatMsg.ChatMessage</dd>
-                                            }
-                                        }
-                                    </dl>
-                                </div>
-                                @{
-                                    <script>
-                                        var chatDiv = document.getElementById("conversation");
-                                        chatDiv.scrollTop = chatDiv.scrollHeight;
-                                    </script>
+        <link href="~/css/chatbot/pe-icon-7-stroke.css" rel="stylesheet" />*@
+    <script>
+        $(document).ready(function () {
+            if ('@Model.Any()' == 'True') {
+                document.getElementById("myForm").style.display = "block";
+            }
+        });
 
-                                    var htmlAttributes = new Dictionary<string, object>();
-                                    htmlAttributes.Add("class", "form-inline");
-                                }
+        function openForm() {
+            document.getElementById("myForm").style.display = "block";
+        }
 
-                                @using (Html.BeginForm("GetChatMessage","HelloChatBot",FormMethod.Post, htmlAttributes))
-                                {
-                                    <div class="form-group">
-                                        <input class="form-control" name="userMessage" type="text" placeholder="Enter your chat here" style="float:left;width:400px;z-index:-1;background-color: #ffffff;height:39px"/>
-                                        <a asp-action="ClearBot" class="btn btn-default" role="button" style="background-color:cadetblue;float:right;margin-top:-39px;color:white">Clear</a>
-                                    </div>
-                                }
-                            </div>
-                            
+        function closeForm() {
+            document.getElementById("myForm").style.display = "none";
+        }
+    </script>
+</head>
+<body class="landing-page landing-page1">
+    <div class="wrapper">
+        <div class="parallax filter-gradient blue" data-color="blue">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="parallax-image">
+
                         </div>
-                        
-                        <div class="col-md-6 col-md-offset-1">
-                            <div class="description" style="margin-top:100px">
-                                <h2>.NET ChatBot with Amazon Lex</h2>
-                                <br>
-                                <h5>Build a .NET Chatbot using ASP .NET Core and Amazon Lex! This chatbot allows you to book a request to Homegate. To start using this bot simply type “I want to rent/buy a house/apartment”, “Real Estate” or a similar utterance. This simple chatbot currently is designed to follow three instructions</h5>
-                            </div>
-                            <div class="buttons" style="margin-top:20px">
-                                <table>
-                                    <tr>
-                                        <td class="button-cell">
-                                            <form action="http://aws.amazon.com/lex">
-                                                <button type="submit" class="btn btn-fill btn-neutral">
-                                                    Amazon Lex
-                                                </button>
-                                            </form>
-                                        </td>
-                                        <td class="button-cell">
-                                            <form action="http://aws.amazon.com/sdk-for-net">
-                                                <button type="submit" class="btn btn-fill btn-neutral">
-                                                    AWS SDK for .NET
-                                                </button>
-                                            </form>
-                                        </td>
-                                        <td class="button-cell">
-                                            <form action="http://aws.amazon.com/lambda">
-                                                <button class="btn btn-fill btn-neutral">
-                                                    AWS Lambda
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
-    </body>
+
+        @*<button class="open-button" onclick="openForm()">Chat with us</button>
+
+        <div class="chat-popup" id="myForm">
+            <div id="conversation" style="width: 470px; height: 450px; background-color: #ffffff; overflow: scroll;">
+                <dl>
+                    @foreach (var ChatMsg in Model)
+                    {
+                        if (ChatMsg.MsgType == dotnetLexChatBot.Models.MessageType.UserMessage)
+                        {
+                            <dt class="userRequest">@ChatMsg.ChatMessage</dt>
+                        }
+                        else
+                        {
+                            <dd class="lexResponse">@ChatMsg.ChatMessage</dd>
+                        }
+                    }
+                </dl>
+            </div>
+            @{
+                <script>
+                    var chatDiv = document.getElementById("conversation");
+                    chatDiv.scrollTop = chatDiv.scrollHeight;
+                </script>
+
+                var htmlAttributes = new Dictionary<string, object>();
+                htmlAttributes.Add("class", "form-inline");
+                htmlAttributes.Add("autocomplete", "off");
+            }
+
+            @using (Html.BeginForm("GetChatMessage", "HelloChatBot", FormMethod.Post, htmlAttributes))
+            {
+                <div class="form-group">
+                    <input class="form-control" name="userMessage" type="text" placeholder="Enter your chat here" style="float:left;width:400px;z-index:-1;background-color: #ffffff;height:39px" />
+                    <a asp-action="ClearBot" class="btn btn-default" role="button" style="background-color: #e5007d; float: right; color: #fff; font-weight: 700; border: 1px solid #e5007d;">Clear</a>
+                </div>
+            }
+        </div>*@
+    </div>
+
+    <section class="chatbox">
+        <section class="chat-window">
+            @foreach (var ChatMsg in Model)
+            {
+                if (ChatMsg.MsgType == dotnetLexChatBot.Models.MessageType.UserMessage)
+                {
+                    <article class="msg-container msg-remote">
+                        <div class="msg-box">
+                            <img class="user-img" id="user-0" src="~/images/user.png" />
+                            <div class="flr">
+                                <div class="messages">
+                                    <p class="msg" id="msg-0">
+                                        @ChatMsg.ChatMessage
+                                    </p>
+                                </div>
+                                <span class="timestamp"><span class="username">User</span>&bull;<span class="posttime">Some minutes ago</span></span>
+                            </div>
+                        </div>
+                    </article>
+                }
+                else
+                {
+                    <article class="msg-container msg-self">
+                        <div class="msg-box" style="color: white;">
+                            <div class="flr">
+                                <div class="messages">
+                                    <p class="msg" id="msg-1">
+                                        @ChatMsg.ChatMessage
+                                    </p>
+                                </div>
+                                <span class="timestamp"><span class="username">Bot</span>&bull;<span class="posttime">Some minutes ago</span></span>
+                            </div>
+                            <img class="user-img" id="user-0" src="//gravatar.com/avatar/56234674574535734573000000000001?d=retro" />
+                        </div>
+                    </article>
+                }
+            }
+        </section>
+        @{
+            
+            var htmlAttributes = new Dictionary<string, object>();
+            htmlAttributes.Add("class", "chat-input");
+            htmlAttributes.Add("autocomplete", "off");
+        }
+
+        @using (Html.BeginForm("GetChatMessage", "HelloChatBot", FormMethod.Post, htmlAttributes))
+        {
+            <input type="text" name="userMessage" autocomplete="off" placeholder="Type a message" />
+            <button type="submit">
+                <svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="rgba(0,0,0,.38)" d="M17,12L12,17V14H8V10H12V7L17,12M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L5,8.09V15.91L12,19.85L19,15.91V8.09L12,4.15Z" /></svg>
+            </button>
+        }
+    </section>
+
+    
+</body>
 </html>
