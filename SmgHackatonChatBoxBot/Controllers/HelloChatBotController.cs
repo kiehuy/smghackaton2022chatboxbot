@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Http;
 using dotnetLexChatBot.Models;
 using dotnetLexChatBot.Data;
 using Amazon.Lex;
+//using System.Web.Mvc;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -44,71 +45,72 @@ namespace dotnetLexChatBot.Controllers
             awsLexSvc = awsLexService;
         }
 
-        public IActionResult TestChat(List<ChatBotMessage> messages)
+        public async Task<IActionResult> TestChat(List<ChatBotMessage> messages)
         {
-            return View(messages);
-        }
-
-        public IActionResult ClearBot()
-        {
-            userHttpSession = HttpContext.Session;
-            
-            //Clear session keys and session information without removing Session ID
-            userHttpSession.Clear();
-
-            //New botMessages and lexSessionData objects
-            botMessages = new List<ChatBotMessage>();
-            lexSessionData = new Dictionary<string, string>();
-
-            userHttpSession.Set<List<ChatBotMessage>>(botMsgKey, botMessages);
-            userHttpSession.Set<Dictionary<string, string>>(botAtrribsKey, lexSessionData);
-            
-            awsLexSvc.Dispose();
-            return View("TestChat", botMessages);
-        }
-
-        [HttpGet]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GetChatMessage(string userMessage)
-        {
-            //Get user session and chat info
             userHttpSession = HttpContext.Session;
             userSessionID = userHttpSession.Id;
             botMessages = userHttpSession.Get<List<ChatBotMessage>>(botMsgKey) ?? new List<ChatBotMessage>();
             lexSessionData = userHttpSession.Get<Dictionary<string, string>>(botAtrribsKey) ?? new Dictionary<string, string>();
 
-            //No message was provided, return to current view
-            if (String.IsNullOrEmpty(userMessage)) return View("TestChat", botMessages);
+            //A Valid Message exists, Add to page and allow Lex to process
+            botMessages.Add(new ChatBotMessage()
+            { MsgType = MessageType.UserMessage, ChatMessage = "Hello" });
+
+            //await postUserData(botMessages);
+
+            //Call Amazon Lex with Text, capture response
+            var lexResponse = await awsLexSvc.SendTextMsgToLex("Hello", lexSessionData, userSessionID);
+
+            return View(messages);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> GetChatMessage(string userMessage)
+        {
+            userHttpSession = HttpContext.Session;
+            userSessionID = userHttpSession.Id;
+            botMessages = userHttpSession.Get<List<ChatBotMessage>>(botMsgKey) ?? new List<ChatBotMessage>();
+            lexSessionData = userHttpSession.Get<Dictionary<string, string>>(botAtrribsKey) ?? new Dictionary<string, string>();
 
             //A Valid Message exists, Add to page and allow Lex to process
             botMessages.Add(new ChatBotMessage()
             { MsgType = MessageType.UserMessage, ChatMessage = userMessage });
 
-            await postUserData(botMessages);
+            //await postUserData(botMessages);
 
             //Call Amazon Lex with Text, capture response
             var lexResponse = await awsLexSvc.SendTextMsgToLex(userMessage, lexSessionData, userSessionID);
+
+            if (lexResponse != null && !string.IsNullOrEmpty(lexResponse.Message))
+            {
+                if (lexResponse.Message.Contains("[report]"))
+                {
+                    lexResponse.Message = lexResponse.Message.Replace("[report]", "<a id='openReport' href='/HelloChatBot/GetReport' target='_blank'>Open your report</a>");
+                }
+            }
 
             lexSessionData = lexResponse.SessionAttributes;
             if (
                 lexResponse.DialogState == DialogState.ElicitSlot ||
                 lexResponse.DialogState == DialogState.ConfirmIntent
-            ) {
+            )
+            {
                 botMessages.Add(
                     new ChatBotMessage()
-                    { 
-                        MsgType = MessageType.LexMessage, 
-                        ChatMessage = lexResponse.Message 
+                    {
+                        MsgType = MessageType.LexMessage,
+                        ChatMessage = lexResponse.Message
                     });
-            } else if (
-                lexResponse.DialogState == DialogState.ReadyForFulfillment ||
-                lexResponse.DialogState == DialogState.Fulfilled
-            ) {
+            }
+            else if (
+              lexResponse.DialogState == DialogState.ReadyForFulfillment ||
+              lexResponse.DialogState == DialogState.Fulfilled
+          )
+            {
                 botMessages.Add(
                     new ChatBotMessage()
-                    { 
-                        MsgType = MessageType.LexMessage, 
+                    {
+                        MsgType = MessageType.LexMessage,
                         ChatMessage = lexResponse.Message ?? "Your order is being processed. Thank you for your business!"
                     });
             }
@@ -116,8 +118,8 @@ namespace dotnetLexChatBot.Controllers
             //Add updated botMessages and lexSessionData object to Session
             userHttpSession.Set<List<ChatBotMessage>>(botMsgKey, botMessages);
             userHttpSession.Set<Dictionary<string, string>>(botAtrribsKey, lexSessionData);
-           
-            return View("TestChat", botMessages);
+
+            return Json(botMessages);
         }
 
         public async Task<IActionResult> postUserData(List<ChatBotMessage> messages)
@@ -126,7 +128,11 @@ namespace dotnetLexChatBot.Controllers
             return await Task.Run(() => TestChat(messages));
         }
 
-        
+        public FileResult GetReport()
+        {
+            byte[] FileBytes = System.IO.File.ReadAllBytes("Views/HelloChatBot/report.pdf");
+            return File(FileBytes, "application/pdf");
+        }
     }
 
 }
